@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="../../favicon.ico">
+  
+
+  <base href="">
+
+  <title>Vvveb - ChatGPT Plugin</title>
+
+  <link href="css/admin.css" rel="stylesheet">
+</head>
+
+
+<body>
+
+  <div id="container">
+
+    <div class="sidebar" data-v-copy-from="index.html,.sidebar">
+    </div>
+
+
+    <div class="main">
+
+      <div class="clearfix top-header" data-v-copy-from="index.html,.top-header">
+      </div>
+
+      <form id="settings-form" action="" method="post" class="needs-validation" novalidate data-v-product>
+        <input type="hidden" name="action" id="action" value="save">
+        <div class="actions">
+          <div class="title">
+            <h4 class="text-muted mt-2">
+              <img src="../../plugins/chatgpt/chatgpt.svg" height="42">&ensp;
+              <span>ChatGPT Plugin</span>
+            </h4>
+          </div>
+          <div class="btns">
+          <button type="submit" href="" class="btn btn-primary btn-icon ms-1" title="Save post">
+            <i class="icon-create-outline"></i> <span>Save settings</span>
+          </button>
+          </div>
+        </div>
+        <div>
+          <div id="main-content">
+
+         	<div class="notifications" data-v-notifications data-v-copy-from="index.html,.notifications"></div>
+
+            <div class="content clearfix settings">
+
+                  <div class="card mb-3">
+					<div class="card-header bg-body border-bottom fs-bold">
+						<label for="input-site-title" class="col-form-label">Settings</label>
+					</div>
+                    <div class="card-body">
+					
+						<div class="row mb-3">
+						  <label for="input-language" class="col-sm-2 col-form-label">Key</label>
+						  <div class="col-sm-10">
+							<input type="text" class="form-control" placeholder="" name="settings[key]">
+						  </div>
+						</div>
+
+						<div class="row mb-3">
+						  <label for="input-model" class="col-sm-2 col-form-label">Model</label>
+						  <div class="col-sm-10">
+							<input type="text"  class="form-control" placeholder="" name="settings[model]" value="text-davinci-003">
+						  </div>
+						</div>
+
+						<div class="row mb-3">
+						  <label for="input-temperature" class="col-sm-2 col-form-label">Temperature</label>
+						  <div class="col-sm-10">
+							<input type="text"  class="form-control" placeholder="" name="settings[temperature]" value="0">
+						  </div>
+						</div>
+						
+						<div class="row mb-3">
+						  <label for="input-max_tokens" class="col-sm-2 col-form-label">Max tokens</label>
+						  <div class="col-sm-10">
+							<input type="text" class="form-control" placeholder="" name="settings[max_tokens]" value="70">
+						  </div>
+						</div>
+						
+                    </div>
+                  </div>
+               
+            </div>
+          </div>
+      </form>
+
+    </div>
+  </div>
+
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script id="admin-js" type="module" src="../../js/admin.js"></script>
+  <script type="module" src="../../js/admin.js"></script>
+
+</body>
+</html>
