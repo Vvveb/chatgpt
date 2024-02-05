@@ -49,8 +49,9 @@ class Settings extends Base {
 	function index() {
 		$this->view->defaults = [
 			'key'         => '',
-			'model'       => 'text-davinci-003',
+			'model'       => 'gpt-3.5-turbo-instruct',
 			'temperature' => 0,
-			'max_tokens'  => 70, ];
+			'max_tokens'  => 300,
+		];
 	}
 }

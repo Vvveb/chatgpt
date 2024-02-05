@@ -1,9 +1,4 @@
-$(window).on("vvveb.tinymce.options", function (e, tinyMceOptions) { 
-	tinyMceOptions.quickbars_insert_toolbar += '| AskChatGPT';
-	tinyMceOptions.toolbar += '| AskChatGPT';
-
-	return tinyMceOptions;
-});
+$("#select-actions #edit-code-btn").after('<a id="ai-assistant-btn" href="" title="AI assistant"><i class="icon-color-wand"></i></a>');
 
 let aiResponseTemplate = `
 <div class="response">
@@ -17,12 +12,11 @@ let aiResponseTemplate = `
 		  </div>
 		</div>
 
-	
 	</div>
 	
 	<div class="ai-actions">
 		<button type="button" class="btn btn-sm btn-outline-primary btn-insert"><i class="icon-arrow-up"></i>Insert content</button>
-		<!-- <button type="button" class="btn btn-sm btn-outline-primary btn-replace"><i class="icon-swap-horizontal-outline"></i> Replace with</button> -->
+		<button type="button" class="btn btn-sm btn-outline-primary btn-replace"><i class="icon-swap-horizontal-outline"></i> Replace with</button>
 	</div>
 </div>	
 `;
@@ -40,7 +34,7 @@ let aiModalTemplate = `<div class="modal fade" id="ai-assistant-modal" tabindex=
         <textarea rows="3" cols="150" class="form-control mb-3"></textarea>
       
 	    <button type="button" class="btn btn-success btn-ask-ai"><i class="icon-color-wand la-lg"></i> Ask AI</button>
-	    <!-- <button type="button" class="btn btn-light border btn-insert-content"><i class="icon-arrow-up la-lg"></i> Insert element content</button> -->
+	    <button type="button" class="btn btn-light border btn-insert-content"><i class="icon-arrow-up la-lg"></i> Insert element content</button>
 		
 		<div class="spinner-border spinner-border-sm mx-3" role="status" style="display:none">
 		  <span class="visually-hidden">Loading...</span>
@@ -121,8 +115,19 @@ $("#ai-assistant-btn").on("click", function(event) {
 
 
 $("#ai-assistant-modal").on("click", ".btn-insert",function(event) {
-	let response = $(this).parents(".response:first");
-	tinyMceInstance.insertContent($(".content", response).html());
+	let response = $(this).parents(".response:first")
+	let selectedEl = Vvveb.Builder.selectedEl;
+
+	var node = $( $(".content", response).html() );
+		
+	selectedEl.append(node);
+	
+	node = node.get(0);
+	
+	Vvveb.Undo.addMutation({type: 'childList', 
+							target: node.parentNode, 
+							addedNodes: [node], 
+							nextSibling: node.nextSibling});
 	
 	return false;
 });
@@ -146,38 +151,16 @@ $("#ai-assistant-modal").on("click", ".btn-replace",function(event) {
 	return false;
 });
 
-
-
-$(window).on("vvveb.tinymce.setup", function (e, editor) { 
-	
-	editor.ui.registry.addButton('AskChatGPT', {
-		text: "Ask ChatGPT",
-		icon: 'highlight-bg-color',
-		tooltip: 'Highlight text and click this button to query ChatGPT',
-		//enabled: true,
-		onAction: (_) => {
-			tinyMceInstance = editor;
-
-			if (!chatgptOptions["key"] ) {
-				alert('No ChatGPT key configured! Enter a valid key in the plugin settings page.');
-				return;
-			}
-			
-			let selection = tinymce.activeEditor.selection.getContent();
-			$("textarea", aiModal).val(selection);
-			aiModal.modal("show");
-		}
-	});
-});
-
-function aiAssistantSendQuery(text, editor)  {
+function aiAssistantSendQuery()  {
 		if (!chatgptOptions["key"] ) {
 			displayToast("bg-danger", "Error", 'No ChatGPT key configured! Enter a valid key in the plugin settings page.');
 			return;
 		}
+
+		$(".spinner-border", aiModal).show();
 		
 		let selection = $("textarea", aiModal).val();
-
+		
 		const ChatGPT = {
 			//api_key: chatgptOptions["key"] ?? null,
 			model: chatgptOptions["model"] ?? "gpt-3.5-turbo-instruct",
@@ -231,6 +214,8 @@ function aiAssistantSendQuery(text, editor)  {
 			responses.append(response);
 			responses.show();
 			response[0].scrollIntoViewIfNeeded();
+			
+			//$("textarea", aiModal).val(reply);
 		}).catch(error => {
 			$(".spinner-border", aiModal).hide();
 			displayToast("bg-danger", "Error", error);

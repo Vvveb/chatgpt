@@ -30,7 +30,7 @@ Author: givanz
 Version: 0.1
 Thumb: chatgpt.svg
 Author url: https://www.vvveb.com
-Settings: /admin/?module=plugins/chatgpt/settings
+Settings: /admin/index.php?module=plugins/chatgpt/settings
 */
 
 use \Vvveb\System\Event as Event;
@@ -43,23 +43,34 @@ class ChatgptPlugin {
 	function addTinyMce() {
 		Event::on('Vvveb\System\Core\View', 'compile', __CLASS__, function ($template, $htmlFile, $tplFile, $vTpl, $view) {
 			//insert js on post and product page
-			if ($template == 'content/post.html' || $template == 'product/product.html') {
+			if ($template == 'content/post.html' || $template == 'product/product.html' || $template == 'editor/editor.html' || $template == 'content/menus/menu.html') {
 				$defaults = [
 					'key'             => '',
-					'model'           => 'text-davinci-003',
+					'model'           => 'gpt-3.5-turbo-instruct',
 					'temperature'     => 0,
-					'max_tokens'      => 70,
+					'max_tokens'      => 300,
 				];
 
 				$options = Vvveb\get_setting('chatgpt', ['key', 'model', 'temperature', 'max_tokens']);
 				$options = $options + $defaults;
 				$json = json_encode($options);
-				$script = "'<script>chatgptOptions = $json;</script><script src=\"../../plugins/chatgpt/chatgpt-tinymce.js\"></script>'";
+				$script = "'<script>chatgptOptions = $json;</script>";
+
+				if ($template == 'content/post.html' || $template == 'product/product.html' || $template == 'content/menus/menu.html') {
+					$script .= '<script src="../../plugins/chatgpt/chatgpt-tinymce.js"></script>\'';
 
 				//insert script
-				//$vTpl->loadTemplateFile(__DIR__ . '/app/template/common.pst');
+					//$vTpl->loadTemplateFile(__DIR__ . '/app/template/common.pst');
+				} else {
+					if ($template == 'editor/editor.html') {
+						$script .= '<script src="../../plugins/chatgpt/chatgpt-vvvebjs.js"></script>\'';
+					}
+				}
+
 				$vTpl->addCommand('body|append', $script);
 			}
+
+			return [$template, $htmlFile, $tplFile];
 		});
 	}
 
@@ -69,13 +80,13 @@ class ChatgptPlugin {
 		Event::on('Vvveb\Controller\Base', 'init-menu', __CLASS__, function ($menu) use ($admin_path) {
 			$menu['plugins']['items']['chatgpt'] = [
 				'name'     => 'ChatGPT',
-				'url'      => $admin_path . '?module=plugins/chatgpt/settings',
+				'url'      => $admin_path . 'index.php?module=plugins/chatgpt/settings',
 				'icon-img' => PUBLIC_PATH . 'plugins/chatgpt/chatgpt.svg',
 			];
 
 			return [$menu];
-		}, 20);
-		
+		});
+
 		//insert ask chatgpt button in tinymce editor toolbar for post and product admin templates
 		$this->addTinyMce();
 	}
