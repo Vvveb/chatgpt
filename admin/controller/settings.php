@@ -36,7 +36,7 @@ class Settings extends Base {
 		if ($settings /*&&
 			($errors = $validator->validate($settings)) === true*/) {
 			//$settings              = $validator->filter($settings);
-			$results               = \Vvveb\set_settings('chatgpt', $settings);
+			$results               = \Vvveb\setMultiSetting('chatgpt', $settings);
 			$this->view->success[] = __('Settings saved!');
 			CacheManager::delete();
 		} else {

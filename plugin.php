@@ -51,7 +51,7 @@ class ChatgptPlugin {
 					'max_tokens'      => 300,
 				];
 
-				$options = Vvveb\get_setting('chatgpt', ['key', 'model', 'temperature', 'max_tokens']);
+				$options = Vvveb\getSetting('chatgpt', ['key', 'model', 'temperature', 'max_tokens']);
 				$options = $options + $defaults;
 				$json = json_encode($options);
 				$script = "'<script>chatgptOptions = $json;</script>";
@@ -70,7 +70,7 @@ class ChatgptPlugin {
 				$vTpl->addCommand('body|append', $script);
 			}
 
-			return [$template, $htmlFile, $tplFile];
+			return [$template, $htmlFile, $tplFile, $vTpl, $view];
 		});
 	}
 
