@@ -1,4 +1,5 @@
-$(window).on("vvveb.tinymce.options", function (e, tinyMceOptions) { 
+window.addEventListener("tinymce.options", function (event) { 
+	let tinyMceOptions = event.detail;
 	tinyMceOptions.quickbars_insert_toolbar += '| AskChatGPT';
 	tinyMceOptions.toolbar += '| AskChatGPT';
 
@@ -17,12 +18,11 @@ let aiResponseTemplate = `
 		  </div>
 		</div>
 
-	
 	</div>
 	
 	<div class="ai-actions">
 		<button type="button" class="btn btn-sm btn-outline-primary btn-insert"><i class="icon-arrow-up"></i>Insert content</button>
-		<!-- <button type="button" class="btn btn-sm btn-outline-primary btn-replace"><i class="icon-swap-horizontal-outline"></i> Replace with</button> -->
+		<button type="button" class="btn btn-sm btn-outline-primary btn-replace"><i class="icon-swap-horizontal-outline"></i> Replace with</button>
 	</div>
 </div>	
 `;
@@ -40,7 +40,7 @@ let aiModalTemplate = `<div class="modal fade" id="ai-assistant-modal" tabindex=
         <textarea rows="3" cols="150" class="form-control mb-3"></textarea>
       
 	    <button type="button" class="btn btn-success btn-ask-ai"><i class="icon-color-wand la-lg"></i> Ask AI</button>
-	    <!-- <button type="button" class="btn btn-light border btn-insert-content"><i class="icon-arrow-up la-lg"></i> Insert element content</button> -->
+	    <button type="button" class="btn btn-light border btn-insert-content"><i class="icon-arrow-up la-lg"></i> Insert element content</button>
 		
 		<div class="spinner-border spinner-border-sm mx-3" role="status" style="display:none">
 		  <span class="visually-hidden">Loading...</span>
@@ -82,74 +82,91 @@ let aiModalTemplate = `<div class="modal fade" id="ai-assistant-modal" tabindex=
 }
 `;
 
-$("body").append(aiModalTemplate);
+document.body.append(generateElements(aiModalTemplate)[0]);
 
-let aiModal = $("#ai-assistant-modal");
+let aiModal = document.getElementById("ai-assistant-modal");
+let bsModal = bootstrap.Modal.getOrCreateInstance(aiModal);
 
-$(".btn-ask-ai", aiModal).on("click", function(event) {
+aiModal.querySelector(".btn-ask-ai").addEventListener("click", function(event) {
 	aiAssistantSendQuery();
 	return false;
 });
 
-$(".btn-insert-content", aiModal).on("click", function(event) {
-	let selectedEl = Vvveb.Builder.selectedEl.get(0);
+aiModal.querySelector(".btn-insert-content",).addEventListener("click", function(event) {
+	let selectedEl = Vvveb.Builder.selectedEl;
 	let text = selectedEl.innerHTML.trim();
-	
-	$("textarea", aiModal).val(function( index, value ) {
-		return value + "\n" + text;
-	});
+	let textarea = aiModal.querySelector("textarea");
+	textarea.value = textarea.value + "\n" + text;
 	
 	return false;
 });
-
-$(".btn-save", aiModal).on("click", function(event) {
-	let selectedEl = Vvveb.Builder.selectedEl.get(0);
+/*
+aiModal.querySelector(".btn-save").addEventListener("click", function(event) {
+	let selectedEl = Vvveb.Builder.selectedEl;
 	selectedEl.innerHTML = $("textarea", aiModal).val();
 	$("textarea", aiModal).val("")
 });
-
-$(".close-btn", aiModal).on("click", function(event) {
-	$("textarea", aiModal).val("")
-	$(".responses", aiModal).html("").hide();
+*/
+aiModal.querySelector(".close-btn").addEventListener("click", function(event) {
+	aiModal.querySelector("textarea").value = "";
+	let responses =  aiModal.querySelector(".responses");
+	responses.innerHTML = "";
+	responses.style.display = "none";
 });
 
-$("#ai-assistant-btn").on("click", function(event) {
-	aiModal.modal("show");
+document.addEventListener("click", function(event) {
+	let element = event.target.closest(".btn-insert");
+	if (element) {
+		let response = element.closest(".response")
+		let selectedEl = Vvveb.Builder.selectedEl;
+
+		let node = response.querySelector(".content");
+			
+		selectedEl.append(node);
+		
+		Vvveb.Undo.addMutation({type: 'childList', 
+								target: node.parentNode, 
+								addedNodes: [node], 
+								nextSibling: node.nextSibling});
+
+		event.preventDefault();	
+		return false;
+	}
+});
+
+document.addEventListener("click", function(event) {
+	let element = event.target.closest(".btn-replace");
+	if (element) {
+		let response = element.closest(".response")
+		let selectedEl  = Vvveb.Builder.selectedEl;
+
+		let node = response.querySelector(".content");
+		
+		Vvveb.Undo.addMutation({type: 'childList', 
+								target: selectedEl.parentNode, 
+								addedNodes: [node], 
+								removedNodes: [selectedEl], 
+								nextSibling: selectedEl.nextSibling});
+
+		selectedEl.replaceWith(node);
 	
+		event.preventDefault();	
+		return false;
+	}
+});
+
+/*
+document.getElementById("ai-assistant-btn")?.addEventListener("click", function(event) {
+	bsModal.show();
+
+	event.preventDefault();
 	return false;
 });
+*/
 
+window.addEventListener("tinymce.setup", function (event) { 
+	let editor = event.detail;
 
-$("#ai-assistant-modal").on("click", ".btn-insert",function(event) {
-	let response = $(this).parents(".response:first");
-	tinyMceInstance.insertContent($(".content", response).html());
-	
-	return false;
-});
-
-$("#ai-assistant-modal").on("click", ".btn-replace",function(event) {
-	let response    = $(this).parents(".response:first")
-	let selectedEl  = Vvveb.Builder.selectedEl;
-
-	var node = $( $(".content", response).html() );
-	
-	node = node.get(0);
-	
-	Vvveb.Undo.addMutation({type: 'childList', 
-							target: selectedEl[0].parentNode, 
-							addedNodes: [node], 
-							removedNodes: [selectedEl[0]], 
-							nextSibling: selectedEl[0].nextSibling});
-
-	selectedEl.replaceWith(node);
-	
-	return false;
-});
-
-
-
-$(window).on("vvveb.tinymce.setup", function (e, editor) { 
-	
 	editor.ui.registry.addButton('AskChatGPT', {
 		text: "Ask ChatGPT",
 		icon: 'highlight-bg-color',
@@ -164,8 +181,8 @@ $(window).on("vvveb.tinymce.setup", function (e, editor) {
 			}
 			
 			let selection = tinymce.activeEditor.selection.getContent();
-			$("textarea", aiModal).val(selection);
-			aiModal.modal("show");
+			aiModal.querySelector("textarea").value = selection;
+			bsModal.show();
 		}
 	});
 });
@@ -175,19 +192,19 @@ function aiAssistantSendQuery(text, editor)  {
 			displayToast("bg-danger", "Error", 'No ChatGPT key configured! Enter a valid key in the plugin settings page.');
 			return;
 		}
-		
-		let selection = $("textarea", aiModal).val();
 
+		aiModal.querySelector(".spinner-border").style.display = '';
+		
+		let selection = aiModal.querySelector("textarea").value;
+		
 		const ChatGPT = {
 			//api_key: chatgptOptions["key"] ?? null,
 			model: chatgptOptions["model"] ?? "gpt-3.5-turbo-instruct",
 			/*
-			messages: [
-			  {
+			messages: [{
 				role: "user",
 				content: prompt
-			  },
-			  {
+			  },{
 				role: "system",
 				content: "You are a Bootstrap 5 Html expert."
 			  },
@@ -199,7 +216,7 @@ function aiAssistantSendQuery(text, editor)  {
 			//format: "html"
 		};
 
-		fetch("https://api.openai.com/v1/completions", {
+		fetch(chatgptOptions["url"] ?? "https://api.openai.com/v1/completions", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -207,7 +224,7 @@ function aiAssistantSendQuery(text, editor)  {
 			},
 			body: JSON.stringify(ChatGPT)
 		}).then(res => res.json()).then(data => {
-			$(".spinner-border", aiModal).hide();
+			document.querySelector(".spinner-border", aiModal).style.display = 'none';
 			if (data.error) {
 				let message = '';
 				for (name in data.error) {
@@ -223,16 +240,18 @@ function aiAssistantSendQuery(text, editor)  {
 				reply += data.choices[i].text + "\n";
 			}
 
-			let responses = $(".responses");	
-			let response = $(aiResponseTemplate);
+			let responses = document.querySelector(".responses");	
+			let response = generateElements(aiResponseTemplate)[0];
 
 			
-			$(".content", response).html(reply);
+			response.querySelector(".content").innerHTML = reply;
 			responses.append(response);
-			responses.show();
-			response[0].scrollIntoViewIfNeeded();
+			responses.style.display = '';
+			response.scrollIntoViewIfNeeded();
+			
+			//aiModal.querySelector("textarea").value = reply;
 		}).catch(error => {
-			$(".spinner-border", aiModal).hide();
+			aiModal.querySelector(".spinner-border").style.display = 'none';
 			displayToast("bg-danger", "Error", error);
 			console.log("something went wrong", error);
 		})

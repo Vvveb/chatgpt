@@ -36,7 +36,7 @@ class Settings extends Base {
 		if ($settings /*&&
 			($errors = $validator->validate($settings)) === true*/) {
 			//$settings              = $validator->filter($settings);
-			$results               = \Vvveb\setMultiSetting('chatgpt', $settings);
+			$results               = \Vvveb\setMultiSetting('chatgpt', $settings, $this->global['site_id']);
 			$this->view->success[] = __('Settings saved!');
 			CacheManager::delete();
 		} else {
@@ -47,8 +47,11 @@ class Settings extends Base {
 	}
 
 	function index() {
+		$this->view->site_id = $this->global['site_id'];
+
 		$this->view->defaults = [
 			'key'         => '',
+			'url'         => 'https://api.openai.com/v1/completions',
 			'model'       => 'gpt-3.5-turbo-instruct',
 			'temperature' => 0,
 			'max_tokens'  => 300,

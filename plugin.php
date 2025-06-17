@@ -46,6 +46,7 @@ class ChatgptPlugin {
 			if ($template == 'content/post.html' || $template == 'product/product.html' || $template == 'editor/editor.html' || $template == 'content/menus/menu.html') {
 				$defaults = [
 					'key'             => '',
+					'url'             => 'https://api.openai.com/v1/completions',
 					'model'           => 'gpt-3.5-turbo-instruct',
 					'temperature'     => 0,
 					'max_tokens'      => 300,
@@ -59,15 +60,15 @@ class ChatgptPlugin {
 				if ($template == 'content/post.html' || $template == 'product/product.html' || $template == 'content/menus/menu.html') {
 					$script .= '<script src="../../plugins/chatgpt/chatgpt-tinymce.js"></script>\'';
 
-				//insert script
+					//insert script
 					//$vTpl->loadTemplateFile(__DIR__ . '/app/template/common.pst');
+					$vTpl->addCommand('#content-js|before', $script);
 				} else {
 					if ($template == 'editor/editor.html') {
 						$script .= '<script src="../../plugins/chatgpt/chatgpt-vvvebjs.js"></script>\'';
+						$vTpl->addCommand('body|append', $script);
 					}
 				}
-
-				$vTpl->addCommand('body|append', $script);
 			}
 
 			return [$template, $htmlFile, $tplFile, $vTpl, $view];
